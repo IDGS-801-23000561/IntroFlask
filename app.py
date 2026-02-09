@@ -51,7 +51,49 @@ def distancia():
         y1=int(request.form.get("y1"))     
         y2=int(request.form.get("y2"))
         res=(((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)))**.5
-    return render_template('distancia.html', x1=x1, x2=x2, y1=y1, y2=y2, res=res)    
+    return render_template('distancia.html', x1=x1, x2=x2, y1=y1, y2=y2, res=res)
+
+PRECIO = 12
+
+@app.route('/cinepolis', methods=['GET', 'POST'])
+def cinepolis():
+    Nombre = ""
+    Compradores = 0
+    Boletos = 0
+    total = 0
+    max_boletos = 0
+    error = None
+
+    form = forms.CinepolisForm(request.form)
+
+    if request.method == "POST" and form.validate():
+        Nombre = form.nombre.data
+        Compradores = form.compradores.data
+        Boletos = form.boletos.data
+        paga_cineco = (form.tarjeta.data == "si")
+
+        max_boletos = Compradores * 7
+        if Boletos > max_boletos:
+            error = "Error: No puedes comprar más de 7 boletos por comprador."
+            return render_template("cinepolis.html", form=form, error=error, total=0,
+                                   Nombre=Nombre, Compradores=Compradores, Boletos=Boletos,
+                                   max_boletos=max_boletos)
+
+        subtotal = Boletos * PRECIO
+
+        if Boletos > 5:
+            total = subtotal * 0.85
+        elif 3 <= Boletos <= 5:
+            total = subtotal * 0.90
+        else:
+            total = subtotal
+
+        if paga_cineco:
+            total *= 0.90
+
+    return render_template("cinepolis.html", form=form, error=error, total=total,
+                           Nombre=Nombre, Compradores=Compradores, Boletos=Boletos,
+                           max_boletos=max_boletos)
 
 @app.route("/usuarios", methods=['GET', 'POST'])
 def usuarios():
